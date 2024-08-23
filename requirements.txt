@@ -1,0 +1,8 @@
+numpy
+pandas
+matplotlib.pyplot
+pandas_datareader
+keras.models
+yfinance
+streamlit 
+sklearn.preprocessing
