@@ -14,7 +14,7 @@ end = '2019-12-31'
 st.title('Stock Trend Prediction')
 
 user_input = st.text_input('Enter Stock Ticker', 'AAPL')
-df = yf.download(user_input, start=start, end=end)
+df = yf.download(user_input, start=start, end=end, progress=False)
 
 # Describing Data
 st.subheader('Data from 2010 - 2019')
