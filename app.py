@@ -5,6 +5,10 @@ import yfinance as yf  # type: ignore
 import streamlit as st  # type: ignore
 from keras.models import load_model  # type: ignore
 from sklearn.preprocessing import MinMaxScaler  # type: ignore
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 # Set the start and end date for data retrieval
 start = '2010-1-1'
@@ -88,19 +92,22 @@ x_test = np.array(x_test)
 y_test = np.array(y_test)
 x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))  # Ensure shape is (samples, timesteps, features)
 
+# Limit x_test for testing (if necessary)
+# x_test = x_test[:1000]  # Uncomment to limit size for testing
+
 # Make predictions with a spinner
+batch_size = 16  # Use a smaller batch size to reduce load
 try:
     with st.spinner("Making predictions..."):
-        # Predict in batches to avoid broken pipe error
-        batch_size = 32  # Adjust batch size as needed
         y_predicted = []
         for i in range(0, x_test.shape[0], batch_size):
             batch = x_test[i:i + batch_size]
+            logging.info(f"Predicting batch {i // batch_size + 1}")
             y_predicted_batch = model.predict(batch)
             y_predicted.append(y_predicted_batch)
-
         y_predicted = np.concatenate(y_predicted, axis=0)
 except Exception as e:
+    logging.error(f"An error occurred during prediction: {e}")
     st.error(f"An error occurred during prediction: {e}")
     st.stop()
 
