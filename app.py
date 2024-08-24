@@ -88,11 +88,33 @@ x_test = np.array(x_test)
 y_test = np.array(y_test)
 x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))  # Ensure shape is (samples, timesteps, features)
 
-# Make predictions
+# Make predictions with a spinner
 try:
-    y_predicted = model.predict(x_test)
+    with st.spinner("Making predictions..."):
+        # Predict in batches to avoid broken pipe error
+        batch_size = 32  # Adjust batch size as needed
+        y_predicted = []
+        for i in range(0, x_test.shape[0], batch_size):
+            batch = x_test[i:i + batch_size]
+            y_predicted_batch = model.predict(batch)
+            y_predicted.append(y_predicted_batch)
+
+        y_predicted = np.concatenate(y_predicted, axis=0)
 except Exception as e:
     st.error(f"An error occurred during prediction: {e}")
     st.stop()
 
-# 
+# Inverse transform the predicted and actual values
+y_predicted = scaler.inverse_transform(y_predicted)
+y_test = scaler.inverse_transform(y_test.reshape(-1, 1))  # Reshape for inverse_transform
+
+# Final graph: Prediction vs Original
+st.subheader('Prediction vs Original')
+fig2 = plt.figure(figsize=(12, 6))
+plt.plot(y_test, 'b', label='Original Price')
+plt.plot(y_predicted, 'r', label='Predicted Price')
+plt.title('Prediction vs Original Price')
+plt.xlabel('Time')
+plt.ylabel('Price')
+plt.legend()
+st.pyplot(fig2)
